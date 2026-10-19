@@ -27,6 +27,20 @@ Open this directory in Android Studio or build with:
 
 Debug APK: `app/build/outputs/apk/debug/app-debug.apk`
 
+## Customize the Android UI
+
+The complete interface is defined in XML under `app/src/main/res`:
+
+- `layout/activity_*.xml`: full application screens.
+- `layout/row_*.xml`: workflow, job and dynamic input rows.
+- `values/colors.xml`: the application color palette.
+- `values/dimens.xml`: shared spacing and sizing.
+- `values/styles.xml`: typography, buttons and input styles.
+- `values/strings.xml`: all user-facing labels.
+
+`WorkflowInputAdapter` only binds workflow values to the controls declared in
+`layout/row_workflow_input.xml`; it no longer creates UI widgets in Java.
+
 ## Local configuration
 
 Private configuration is intentionally excluded from Git. Before running a new

@@ -2,22 +2,34 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/app_background"
     android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/surface"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="12dp">
-        <TextView
+        android:padding="@dimen/screen_padding">
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/jobs"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:orientation="vertical">
+            <TextView
+                style="@style/AppTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/jobs" />
+            <TextView
+                style="@style/MutedText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/jobs_subtitle" />
+        </LinearLayout>
         <Button
             android:id="@+id/jobsRefreshButton"
+            style="@style/SecondaryButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/refresh" />
@@ -33,5 +45,10 @@
         android:id="@+id/jobsList"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="0dp"
+        android:paddingTop="@dimen/space_sm"
+        android:paddingBottom="@dimen/space_md" />
 </LinearLayout>

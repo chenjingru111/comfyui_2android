@@ -1,9 +1,55 @@
 <resources>
     <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
-        <item name="android:colorAccent">#2563EB</item>
-        <item name="android:navigationBarColor">#FFFFFF</item>
-        <item name="android:statusBarColor">#111827</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:colorAccent">@color/primary</item>
+        <item name="android:navigationBarColor">@color/surface</item>
+        <item name="android:statusBarColor">@color/text_primary</item>
         <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowBackground">@color/app_background</item>
+    </style>
+
+    <style name="AppTitle">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">26sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="SectionTitle">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="FieldLabel">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="MutedText">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="TextInput">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_input</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColorHint">@color/text_secondary</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="PrimaryButton" parent="android:style/Widget.Material.Button">
+        <item name="android:layout_height">52dp</item>
+        <item name="android:backgroundTint">@color/primary</item>
+        <item name="android:textColor">@color/surface</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="SecondaryButton" parent="android:style/Widget.Material.Button">
+        <item name="android:backgroundTint">@color/surface_muted</item>
+        <item name="android:textColor">@color/primary_dark</item>
     </style>
 </resources>

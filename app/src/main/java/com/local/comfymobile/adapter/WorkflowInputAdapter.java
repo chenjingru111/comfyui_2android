@@ -3,8 +3,8 @@ package com.local.comfymobile.adapter;
 import android.content.Context;
 import android.net.Uri;
 import android.text.Editable;
-import android.text.InputType;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -12,10 +12,10 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.local.comfymobile.R;
 import com.local.comfymobile.model.Entities.WorkflowInput;
 
 import java.util.ArrayList;
@@ -57,21 +57,11 @@ public final class WorkflowInputAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         WorkflowInput input = getItem(position);
-        LinearLayout row = new LinearLayout(context);
-        row.setOrientation(LinearLayout.VERTICAL);
-        int padding = dp(14);
-        row.setPadding(padding, dp(10), padding, dp(10));
-
-        TextView label = new TextView(context);
+        View row = LayoutInflater.from(context).inflate(R.layout.row_workflow_input, parent, false);
+        TextView label = row.findViewById(R.id.inputLabel);
         label.setText(input.nodeTitle + " · " + input.label);
-        label.setTextSize(15);
-        row.addView(label, matchWrap());
-
-        TextView type = new TextView(context);
+        TextView type = row.findViewById(R.id.inputType);
         type.setText(input.nodeType + " / " + input.name);
-        type.setTextSize(11);
-        type.setTextColor(0xff6b7280);
-        row.addView(type, matchWrap());
 
         switch (input.kind) {
             case "BOOLEAN": addBoolean(row, input); break;
@@ -86,19 +76,17 @@ public final class WorkflowInputAdapter extends BaseAdapter {
         return row;
     }
 
-    private void addText(LinearLayout row, WorkflowInput input, boolean multiline) {
-        EditText editor = new EditText(context);
+    private void addText(View row, WorkflowInput input, boolean multiline) {
+        EditText editor = row.findViewById(multiline ? R.id.inputTextarea : R.id.inputText);
+        editor.setVisibility(View.VISIBLE);
         editor.setText(stringValue(input));
-        editor.setInputType(InputType.TYPE_CLASS_TEXT | (multiline ? InputType.TYPE_TEXT_FLAG_MULTI_LINE : 0));
-        editor.setMinLines(multiline ? 3 : 1);
         editor.addTextChangedListener(watcher(value -> values.put(input.key, value)));
-        row.addView(editor, matchWrap());
     }
 
-    private void addNumber(LinearLayout row, WorkflowInput input) {
-        EditText editor = new EditText(context);
+    private void addNumber(View row, WorkflowInput input) {
+        EditText editor = row.findViewById(R.id.inputNumber);
+        editor.setVisibility(View.VISIBLE);
         editor.setText(stringValue(input));
-        editor.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED);
         editor.addTextChangedListener(watcher(value -> {
             try {
                 if (input.value instanceof Integer || input.value instanceof Long) values.put(input.key, Long.parseLong(value));
@@ -107,39 +95,37 @@ public final class WorkflowInputAdapter extends BaseAdapter {
         }));
         String range = input.min == null ? "" : "范围 " + input.min + " - " + input.max + (input.step == null ? "" : "，步长 " + input.step);
         editor.setHint(range);
-        row.addView(editor, matchWrap());
     }
 
-    private void addBoolean(LinearLayout row, WorkflowInput input) {
-        CheckBox box = new CheckBox(context);
+    private void addBoolean(View row, WorkflowInput input) {
+        CheckBox box = row.findViewById(R.id.inputBoolean);
+        box.setVisibility(View.VISIBLE);
         Object value = values.get(input.key);
         box.setChecked(value instanceof Boolean && (Boolean) value);
-        box.setText("启用");
         box.setOnCheckedChangeListener((button, checked) -> values.put(input.key, checked));
-        row.addView(box, matchWrap());
     }
 
-    private void addSelect(LinearLayout row, WorkflowInput input) {
-        Spinner spinner = new Spinner(context);
+    private void addSelect(View row, WorkflowInput input) {
+        Spinner spinner = row.findViewById(R.id.inputSelect);
+        spinner.setVisibility(View.VISIBLE);
         List<String> labels = new ArrayList<>();
         for (Object choice : input.choices) labels.add(String.valueOf(choice));
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, labels);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(context, R.layout.item_spinner, labels);
+        adapter.setDropDownViewResource(R.layout.item_spinner_dropdown);
         spinner.setAdapter(adapter);
         int selected = labels.indexOf(stringValue(input));
         if (selected >= 0) spinner.setSelection(selected);
         if (!input.choices.isEmpty()) {
             spinner.setOnItemSelectedListener(new SimpleItemSelected(position -> values.put(input.key, input.choices.get(position))));
         }
-        row.addView(spinner, matchWrap());
     }
 
-    private void addMedia(LinearLayout row, WorkflowInput input) {
-        Button button = new Button(context);
+    private void addMedia(View row, WorkflowInput input) {
+        Button button = row.findViewById(R.id.inputMedia);
+        button.setVisibility(View.VISIBLE);
         Uri selected = media.get(input.key);
         button.setText(selected == null ? "选择" + mediaLabel(input.kind) : "已选择：" + selected.getLastPathSegment());
         button.setOnClickListener(view -> mediaPicker.choose(input));
-        row.addView(button, matchWrap());
     }
 
     private String stringValue(WorkflowInput input) {
@@ -162,7 +148,5 @@ public final class WorkflowInputAdapter extends BaseAdapter {
         };
     }
 
-    private LinearLayout.LayoutParams matchWrap() { return new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT); }
-    private int dp(int value) { return Math.round(value * context.getResources().getDisplayMetrics().density); }
     private interface ValueConsumer { void accept(String value); }
 }
