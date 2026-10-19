@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "type": "wireguard",
+  "name": "person_key",
+  "config": "[Interface]\nPrivateKey = REPLACE_WITH_PRIVATE_KEY\nAddress = 10.0.0.2/32\n\n[Peer]\nPublicKey = REPLACE_WITH_SERVER_PUBLIC_KEY\nAllowedIPs = 0.0.0.0/0\nEndpoint = vpn.example.com:51820\nPersistentKeepalive = 25\n"
+}

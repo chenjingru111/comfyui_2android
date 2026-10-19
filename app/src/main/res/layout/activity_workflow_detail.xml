@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/app_background"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/surface"
+        android:orientation="vertical"
+        android:padding="@dimen/screen_padding">
+        <TextView
+            android:id="@+id/detailTitle"
+            style="@style/AppTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <TextView
+            style="@style/MutedText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:text="@string/workflow_detail_subtitle" />
+    </LinearLayout>
+    <ProgressBar
+        android:id="@+id/detailProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="gone" />
+    <ListView
+        android:id="@+id/inputList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="0dp"
+        android:paddingTop="@dimen/space_sm"
+        android:paddingBottom="@dimen/space_sm" />
+    <Button
+        android:id="@+id/runButton"
+        style="@style/PrimaryButton"
+        android:layout_width="match_parent"
+        android:layout_marginStart="@dimen/screen_padding"
+        android:layout_marginTop="@dimen/space_sm"
+        android:layout_marginEnd="@dimen/screen_padding"
+        android:layout_marginBottom="@dimen/screen_padding"
+        android:text="@string/run_workflow" />
+</LinearLayout>

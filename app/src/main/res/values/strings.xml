@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Comfy Mobile</string>
+    <string name="login_subtitle">连接你的 ComfyUI 工作站</string>
+    <string name="server_url">本地域名或地址</string>
+    <string name="username">账号</string>
+    <string name="password">密码</string>
+    <string name="password_hint">输入网关密码</string>
+    <string name="login">连接并登录</string>
+    <string name="use_server_vpn">启用服务器 VPN（person_key）</string>
+    <string name="vpn_hint">不在服务器局域网时开启，首次连接需要允许 VPN 权限</string>
+    <string name="workflows">工作流</string>
+    <string name="workflows_subtitle">选择流程并配置运行参数</string>
+    <string name="workflow_detail_subtitle">输入项由工作流自动映射，可直接修改</string>
+    <string name="jobs">生成记录</string>
+    <string name="jobs_subtitle">查看任务状态和生成结果</string>
+    <string name="run_workflow">运行工作流</string>
+    <string name="refresh">刷新</string>
+    <string name="save">保存到手机</string>
+    <string name="play_audio">播放/暂停音频</string>
+    <string name="generated_image">生成的图片</string>
+</resources>
