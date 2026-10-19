@@ -75,6 +75,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/space_lg"
                 android:buttonTint="@color/primary"
+                android:checked="true"
                 android:text="@string/use_server_vpn"
                 android:textColor="@color/text_primary" />
             <TextView

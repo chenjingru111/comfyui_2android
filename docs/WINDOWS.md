@@ -1,67 +1,52 @@
-# Windows 使用说明
+# Windows 客户端运行说明
 
-这个分支可直接在 Windows 10/11 上运行 Android 项目、本地网关和
-Stability Matrix 中的 ComfyUI。
+`dev` 分支用于在 Windows 的 Android Studio 中启动手机 App，并通过
+`person_key` VPN 连接当前服务器上的网关和 ComfyUI。Windows 本机不需要再安装
+ComfyUI、Stability Matrix 或 Python 网关。
 
-## 需要安装
+## 准备环境
 
-1. Android Studio（安装 Android SDK 35）。
-2. Python 3.11 或更新版本，安装时勾选 `Add Python to PATH`。
-3. Stability Matrix 以及一个可正常启动的 ComfyUI 包。
-4. Git for Windows。
+1. 安装 Git for Windows。
+2. 安装 Android Studio，并安装 Android SDK 35。
+3. 准备服务器 VPN 配置：原始 WireGuard `.conf` 或项目使用的
+   `person_key.json` 均可。
 
-## 第一次运行
-
-在项目目录中双击：
+## 拉取与初始化
 
 ```text
+git clone -b dev git@github.com:chenjingru111/comfyui_2android.git
+cd comfyui_2android
 scripts\windows\Setup-Windows.bat
 ```
 
-脚本会：
+初始化脚本会自动填写 `local.properties`，并把选择的 `.conf` 安全转换成：
 
-- 自动寻找 Stability Matrix 的 ComfyUI；找不到时要求手动选择包含
-  `main.py` 的目录；
-- 在项目的 `.venv` 中安装网关依赖；
-- 要求设置手机登录网关使用的账号密码；
-- 生成不会提交到 Git 的 `server\config.json`；
-- 尝试为网关开放 Windows 防火墙 TCP 8765 端口；
-- 显示手机登录页应填写的局域网地址。
+```text
+app\src\main\res\raw\person_key.json
+```
 
-如防火墙步骤提示权限不足，右键 `Setup-Windows.bat`，选择“以管理员身份运行”。
+该文件包含私钥，已被 Git 忽略。
 
-## 日常启动
+## 运行
 
-双击：
+推荐用 Android Studio 打开项目根目录，选择模拟器或 USB 真机，然后点击
+Run。也可以先启动模拟器，再双击：
 
 ```text
 scripts\windows\Run-Windows.bat
 ```
 
-它会分别启动 ComfyUI 和手机网关。窗口不要关闭。已经通过 Stability Matrix
-启动 ComfyUI 时，也可以只运行 `Start-Gateway.ps1`。
+脚本会构建、安装并打开 App。登录页默认配置为：
 
-## 构建 Android APK
+- 服务器：`http://192.168.5.160:8765`
+- 账号：`admin`
+- VPN：默认开启
 
-使用 Android Studio 打开项目根目录，等待 Gradle Sync 完成后运行 `app`；
-也可以双击：
+输入服务器网关密码并登录；首次连接时允许 Android 的 VPN 权限即可。
 
-```text
-scripts\windows\Build-Android.bat
-```
+## 说明
 
-APK 输出到 `app\build\outputs\apk\debug\app-debug.apk`。
-
-真实 VPN 配置应放在
-`app\src\main\res\raw\person_key.json`。它已被 `.gitignore` 排除，不会上传。
-
-## 手机连接
-
-手机和 Windows 处于同一局域网时，在登录页填写初始化脚本显示的地址，例如：
-
-```text
-http://192.168.1.20:8765
-```
-
-账号默认为 `admin`，密码是初始化时设置的密码。外网真机测试时再打开
-`person_key` VPN 开关。
+- Windows 只负责运行 Android Studio、模拟器或连接真机。
+- ComfyUI、模型、工作流和网关仍然运行在当前 GPU 服务器上。
+- 不要把 `person_key.json`、生成的 APK 或 VPN 私钥公开上传。
+- 模拟器和真机同时使用同一份 WireGuard 私钥可能互相抢占连接，建议一次只测试一个设备。

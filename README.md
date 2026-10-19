@@ -12,18 +12,18 @@ Native Android client and local authenticated gateway for ComfyUI.
 
 ## Windows 10/11
 
-The `dev` branch can run from a normal Windows checkout without Linux paths.
-Install Android Studio, Python 3.11+ and Stability Matrix, then run:
+The `dev` branch runs the Android client from Windows while ComfyUI and the
+gateway remain on the GPU server. Install Android Studio and run:
 
 ```text
 scripts\windows\Setup-Windows.bat
 scripts\windows\Run-Windows.bat
 ```
 
-Setup creates an isolated Python environment, discovers the Stability Matrix
-ComfyUI package, writes the local gateway configuration and prints the address
-to enter on the phone. See [docs/WINDOWS.md](docs/WINDOWS.md) for the complete
-Chinese guide.
+Setup writes the Android SDK path and imports a local `person_key.json` or raw
+WireGuard `.conf`. Android Studio Run then launches the app with VPN enabled and
+connects to `http://192.168.5.160:8765`. See [docs/WINDOWS.md](docs/WINDOWS.md)
+for the complete Chinese guide.
 
 Build the APK with Android Studio or `scripts\windows\Build-Android.bat`.
 
