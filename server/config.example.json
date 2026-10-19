@@ -1,0 +1,17 @@
+{
+  "bindHost": "0.0.0.0",
+  "port": 8765,
+  "username": "admin",
+  "passwordSalt": "REPLACE_WITH_GENERATED_SALT",
+  "passwordHash": "REPLACE_WITH_GENERATED_PASSWORD_HASH",
+  "tokenSecret": "REPLACE_WITH_GENERATED_TOKEN_SECRET",
+  "comfyCandidates": [
+    "http://127.0.0.1:8188"
+  ],
+  "workflowRoots": [
+    "/path/to/StabilityMatrix/Data/Workflows",
+    "/path/to/ComfyUI/user/default/workflows"
+  ],
+  "comfyInputDir": "/path/to/ComfyUI/input",
+  "database": "server/data/comfy_mobile.db"
+}

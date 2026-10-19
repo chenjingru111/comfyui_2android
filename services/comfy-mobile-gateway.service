@@ -1,0 +1,14 @@
+[Unit]
+Description=Comfy Mobile local gateway
+After=network.target comfy-mobile-comfyui.service
+Wants=comfy-mobile-comfyui.service
+
+[Service]
+Type=simple
+WorkingDirectory=/gpu_move/android-dev/projects/ComfyMobile
+ExecStart=/gpu_move/android-dev/projects/ComfyMobile/scripts/start-gateway.sh
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

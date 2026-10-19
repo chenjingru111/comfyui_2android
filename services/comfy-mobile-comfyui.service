@@ -1,0 +1,13 @@
+[Unit]
+Description=ComfyUI for Comfy Mobile
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/gpu_move/android-dev/projects/ComfyMobile
+ExecStart=/gpu_move/android-dev/projects/ComfyMobile/scripts/start-comfyui.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Comfy Mobile</string>
+    <string name="server_url">本地域名或地址</string>
+    <string name="username">账号</string>
+    <string name="password">密码</string>
+    <string name="login">连接并登录</string>
+    <string name="use_server_vpn">启用服务器 VPN（person_key）</string>
+    <string name="workflows">工作流</string>
+    <string name="jobs">生成记录</string>
+    <string name="run_workflow">运行工作流</string>
+    <string name="refresh">刷新</string>
+    <string name="save">保存到手机</string>
+</resources>

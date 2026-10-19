@@ -1,0 +1,14 @@
+.gradle/
+.idea/
+build/
+app/build/
+local.properties
+*.iml
+
+server/__pycache__/
+server/data/
+server/config.json
+*.log
+
+# Contains the private WireGuard key used by the local device.
+app/src/main/res/raw/person_key.json
