@@ -10,7 +10,24 @@ Native Android client and local authenticated gateway for ComfyUI.
 - `app/.../adapter`: ListView adapters, including dynamic ComfyUI input mapping.
 - `server`: local authentication, ComfyUI discovery, workflow compilation, uploads, queueing and artifacts.
 
-## Start locally
+## Windows 10/11
+
+The `dev` branch can run from a normal Windows checkout without Linux paths.
+Install Android Studio, Python 3.11+ and Stability Matrix, then run:
+
+```text
+scripts\windows\Setup-Windows.bat
+scripts\windows\Run-Windows.bat
+```
+
+Setup creates an isolated Python environment, discovers the Stability Matrix
+ComfyUI package, writes the local gateway configuration and prints the address
+to enter on the phone. See [docs/WINDOWS.md](docs/WINDOWS.md) for the complete
+Chinese guide.
+
+Build the APK with Android Studio or `scripts\windows\Build-Android.bat`.
+
+## Linux server
 
 ```bash
 /gpu_move/android-dev/projects/ComfyMobile/scripts/start-comfyui.sh

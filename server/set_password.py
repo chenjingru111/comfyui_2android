@@ -17,4 +17,4 @@ config["passwordHash"] = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 
 config["tokenSecret"] = secrets.token_hex(32)
 config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 config_path.chmod(0o600)
-print("密码已更新，请重启 comfy-mobile-gateway.service")
+print("密码已更新，请重启 Comfy Mobile Gateway")

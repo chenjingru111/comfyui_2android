@@ -39,7 +39,7 @@
                 android:id="@+id/serverInput"
                 style="@style/TextInput"
                 android:layout_marginTop="@dimen/space_sm"
-                android:hint="http://192.168.5.160:8765"
+                android:hint="@string/server_url_hint"
                 android:inputType="textUri"
                 android:singleLine="true" />
             <TextView
