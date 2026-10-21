@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/app_background"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:fitsSystemWindows="true">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -39,7 +40,8 @@
                 android:id="@+id/serverInput"
                 style="@style/TextInput"
                 android:layout_marginTop="@dimen/space_sm"
-                android:hint="http://192.168.5.160:8765"
+                android:hint="http://192.168.4.6:8765"
+                android:imeOptions="actionNext"
                 android:inputType="textUri"
                 android:singleLine="true" />
             <TextView
@@ -53,9 +55,10 @@
                 style="@style/TextInput"
                 android:layout_marginTop="@dimen/space_sm"
                 android:hint="admin"
+                android:imeOptions="actionNext"
                 android:inputType="text"
-                android:singleLine="true"
-                android:text="admin" />
+                android:maxLength="64"
+                android:singleLine="true" />
             <TextView
                 style="@style/FieldLabel"
                 android:layout_width="wrap_content"

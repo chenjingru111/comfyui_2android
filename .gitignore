@@ -8,7 +8,14 @@ local.properties
 server/__pycache__/
 server/data/
 server/config.json
+server/.venv/
 *.log
+
+# 本机作为 WireGuard 节点时生成的配置（含私钥）
+wireguard/
 
 # Contains the private WireGuard key used by the local device.
 app/src/main/res/raw/person_key.json
+
+# 外部工具（cloudflared 等），体积大且可重新下载
+tools/

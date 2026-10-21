@@ -9,25 +9,73 @@
     android:paddingBottom="@dimen/space_xs">
 
     <LinearLayout
+        android:id="@+id/sectionRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="4dp"
+        android:paddingTop="@dimen/space_lg"
+        android:paddingEnd="4dp"
+        android:paddingBottom="@dimen/space_xs"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/sectionHeader"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/primary"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <Switch
+            android:id="@+id/groupSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/inputCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_card"
         android:orientation="vertical"
-        android:padding="@dimen/space_lg">
+        android:padding="@dimen/space_md">
 
-        <TextView
-            android:id="@+id/inputLabel"
-            style="@style/FieldLabel"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/inputLabel"
+                style="@style/FieldLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/inputBadge"
+                style="@style/MutedText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_sm"
+                android:background="@drawable/bg_status"
+                android:paddingStart="8dp"
+                android:paddingTop="2dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="2dp" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/inputType"
             style="@style/MutedText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_xs"
-            android:layout_marginBottom="@dimen/space_md" />
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="@dimen/space_sm" />
 
         <EditText
             android:id="@+id/inputText"
@@ -41,7 +89,10 @@
             style="@style/TextInput"
             android:gravity="top|start"
             android:inputType="textMultiLine|textCapSentences"
-            android:minLines="4"
+            android:maxLines="6"
+            android:minLines="3"
+            android:scrollbars="vertical"
+            android:textSize="14sp"
             android:visibility="gone" />
 
         <EditText
@@ -51,28 +102,68 @@
             android:singleLine="true"
             android:visibility="gone" />
 
-        <CheckBox
-            android:id="@+id/inputBoolean"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:buttonTint="@color/primary"
-            android:text="启用"
-            android:textColor="@color/text_primary"
-            android:visibility="gone" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:id="@+id/booleanRow">
+
+            <TextView
+                android:id="@+id/booleanState"
+                style="@style/MutedText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <Switch
+                android:id="@+id/inputBoolean"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="@color/primary" />
+        </LinearLayout>
 
         <Spinner
             android:id="@+id/inputSelect"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
+            android:layout_height="wrap_content"
             android:background="@drawable/bg_input"
+            android:minHeight="48dp"
             android:spinnerMode="dropdown"
             android:visibility="gone" />
 
-        <Button
-            android:id="@+id/inputMedia"
-            style="@style/SecondaryButton"
+        <LinearLayout
+            android:id="@+id/mediaRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/mediaValue"
+                style="@style/MutedText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="middle"
+                android:maxLines="2" />
+
+            <Button
+                android:id="@+id/inputMedia"
+                style="@style/SecondaryButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_sm"
+                android:minWidth="76dp"
+                android:text="选择" />
+
+            <Switch
+                android:id="@+id/mediaSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/space_sm" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

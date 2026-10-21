@@ -15,9 +15,12 @@ import android.net.VpnService;
 import com.local.comfymobile.R;
 import com.local.comfymobile.controller.LoginController;
 import com.local.comfymobile.model.AppRepository;
+import com.local.comfymobile.model.SessionStore;
 
 public final class LoginActivity extends Activity implements LoginController.View {
     private static final int VPN_PERMISSION = 3001;
+    /** 传 true 时强制显示登录表单（用来改服务器地址/换账号） */
+    public static final String EXTRA_FORCE = "forceLogin";
     private EditText server;
     private EditText username;
     private EditText password;
@@ -30,6 +33,15 @@ public final class LoginActivity extends Activity implements LoginController.Vie
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+        AppRepository repository = AppRepository.get(this);
+        SessionStore session = repository.session();
+        boolean force = getIntent().getBooleanExtra(EXTRA_FORCE, false);
+        // 已经有登录态就直接进列表，不用每次重新登录
+        if (!force && session.hasSession()) {
+            startActivity(new Intent(this, WorkflowListActivity.class));
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_login);
         server = findViewById(R.id.serverInput);
         username = findViewById(R.id.usernameInput);
@@ -38,10 +50,16 @@ public final class LoginActivity extends Activity implements LoginController.Vie
         progress = findViewById(R.id.loginProgress);
         error = findViewById(R.id.loginError);
         vpn = findViewById(R.id.vpnSwitch);
-        AppRepository repository = AppRepository.get(this);
-        server.setText(repository.session().baseUrl());
+        server.setText(session.baseUrl());
+        username.setText(session.username());
         controller = new LoginController(repository, this);
-        login.setOnClickListener(view -> controller.login(server.getText().toString(), username.getText().toString(), password.getText().toString(), vpn.isChecked()));
+        login.setOnClickListener(view -> {
+            String serverText = server.getText().toString().trim();
+            String usernameText = username.getText().toString().trim();
+            // 先落盘，哪怕登录失败，下次打开也不用重新输入
+            session.saveDraft(serverText, usernameText);
+            controller.login(serverText, usernameText, password.getText().toString(), vpn.isChecked());
+        });
     }
 
     @Override

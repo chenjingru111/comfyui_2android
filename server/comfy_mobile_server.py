@@ -16,22 +16,34 @@ from pathlib import Path
 from typing import Any
 
 import httpx
-from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Query, UploadFile
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 
 BASE_DIR = Path(__file__).resolve().parent
-CONFIG = json.loads((BASE_DIR / "config.json").read_text(encoding="utf-8"))
+CONFIG_FILE = BASE_DIR / "config.json"
+if not CONFIG_FILE.is_file():
+    raise SystemExit("缺少 server/config.json，请先运行：python server/configure_local.py")
+CONFIG = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
 DB_PATH = Path(CONFIG["database"])
+if not DB_PATH.is_absolute():
+    # Documented default is "server/data/comfy_mobile.db", relative to the repo root.
+    DB_PATH = BASE_DIR.parent / DB_PATH
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 UPLOAD_DIR = Path(CONFIG["comfyInputDir"]) / "mobile"
+OUTPUT_DIR = Path(CONFIG.get("comfyOutputDir") or (Path(CONFIG["comfyInputDir"]).parent / "output"))
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(title="Comfy Mobile Gateway", version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 object_info_cache: dict[str, tuple[float, dict[str, Any]]] = {}
+
+# 登录失败限流：同一来源 5 分钟内失败 5 次后锁定 5 分钟，防止公网暴露时被撞库。
+LOGIN_FAILURES: dict[str, list[float]] = {}
+LOGIN_MAX_FAILURES = 5
+LOGIN_WINDOW_SECONDS = 300
 
 
 class LoginRequest(BaseModel):
@@ -42,6 +54,10 @@ class LoginRequest(BaseModel):
 class RunRequest(BaseModel):
     comfyUrl: str = ""
     overrides: dict[str, Any] = Field(default_factory=dict)
+    # 分区开关：{"分区下标": True/False}，改的是该分区里所有节点的旁路状态
+    groupModes: dict[str, bool] = Field(default_factory=dict)
+    # 单个节点开关：{"节点 id": True/False}（图片/音频这类想单独启停的）
+    nodeModes: dict[str, bool] = Field(default_factory=dict)
 
 
 def connect_db() -> sqlite3.Connection:
@@ -75,6 +91,35 @@ def password_valid(password: str) -> bool:
         "sha256", password.encode(), bytes.fromhex(CONFIG["passwordSalt"]), 300_000
     ).hex()
     return hmac.compare_digest(digest, CONFIG["passwordHash"])
+
+
+def client_ip(request: Request) -> str:
+    """走 Cloudflare 隧道时真实来源在 CF-Connecting-IP / X-Forwarded-For 里。"""
+    for header in ("cf-connecting-ip", "x-forwarded-for"):
+        value = request.headers.get(header)
+        if value:
+            return value.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def recent_failures(ip: str) -> list[float]:
+    now = time.time()
+    attempts = [stamp for stamp in LOGIN_FAILURES.get(ip, []) if now - stamp < LOGIN_WINDOW_SECONDS]
+    if attempts:
+        LOGIN_FAILURES[ip] = attempts
+    else:
+        LOGIN_FAILURES.pop(ip, None)
+    return attempts
+
+
+def record_failure(ip: str) -> None:
+    attempts = recent_failures(ip)
+    attempts.append(time.time())
+    LOGIN_FAILURES[ip] = attempts
+    # 简单防膨胀：来源过多时丢掉最早的记录
+    if len(LOGIN_FAILURES) > 2000:
+        for key in list(LOGIN_FAILURES)[:1000]:
+            LOGIN_FAILURES.pop(key, None)
 
 
 def issue_token(username: str) -> str:
@@ -299,14 +344,132 @@ def describe_input(node: dict[str, Any], name: str, spec: Any, value: Any) -> di
     return result
 
 
-def workflow_schema(workflow: dict[str, Any], object_info: dict[str, Any]) -> list[dict[str, Any]]:
-    result: list[dict[str, Any]] = []
+PIPELINE_NODE_TYPES = {
+    "KSampler", "KSamplerAdvanced", "SamplerCustom",
+    "SaveImage", "VHS_VideoCombine",
+}
+
+
+def workflow_groups(workflow: dict[str, Any]) -> list[dict[str, Any]]:
+    """列出画布上的分区：节点数、是否包含采样/输出节点（用来识别“流”）、是否已启用。
+
+    这里的“属于哪个分区”按“被哪些分区包含”来算（一个节点可能同时落在嵌套分区里），
+    这样外层大分区才能被识别成一条流程；输入归组仍用最小的那个分区。
+    """
+    groups_list = workflow.get("groups") or []
+    stats: dict[int, dict[str, Any]] = {}
+    for index, group in enumerate(groups_list):
+        bounding = group.get("bounding") or [0, 0, 0, 0]
+        stats[index] = {
+            "id": index,
+            "title": group.get("title") or "",
+            "top": float(bounding[1]) if len(bounding) > 1 else 0.0,
+            "nodes": 0,
+            "enabled": False,
+            "pipeline": False,
+        }
+
     for node in workflow.get("nodes", []):
-        if node.get("mode", 0) != 0:
+        pos = node.get("pos") or [0, 0]
+        try:
+            px, py = float(pos[0]), float(pos[1])
+        except (TypeError, IndexError, ValueError):
             continue
+        is_pipeline_node = node.get("type") in PIPELINE_NODE_TYPES
+        for index, group in enumerate(groups_list):
+            bounding = group.get("bounding") or [0, 0, 0, 0]
+            if len(bounding) < 4:
+                continue
+            gx, gy, gw, gh = (float(v) for v in bounding[:4])
+            if gx <= px <= gx + gw and gy <= py <= gy + gh:
+                stats[index]["nodes"] += 1
+                stats[index]["enabled"] = stats[index]["enabled"] or node.get("mode", 0) == 0
+                stats[index]["pipeline"] = stats[index]["pipeline"] or is_pipeline_node
+
+    result = list(stats.values())
+    result.sort(key=lambda item: (item["top"], item["id"]))
+
+    # 记录每个分区里嵌套了哪些分区：App 打开外层“流”时，要连里面的小分区一起打开，
+    # 否则内层分区里的节点仍会被当成“已旁路”过滤掉。
+    boxes = {
+        index: tuple(float(v) for v in (group.get("bounding") or [0, 0, 0, 0])[:4])
+        for index, group in enumerate(groups_list)
+        if len(group.get("bounding") or []) >= 4
+    }
+    for item in result:
+        title = item["title"] or ""
+        # 与 ComfyUI 里 Fast Groups Bypasser 面板一致：标题以“编辑”结尾的分区就是那几条主流程
+        item["flow"] = title.endswith("编辑")
+        children: list[int] = []
+        if item["id"] in boxes:
+            ox, oy, ow, oh = boxes[item["id"]]
+            for other, (gx, gy, gw, gh) in boxes.items():
+                if other == item["id"]:
+                    continue
+                if gx >= ox and gy >= oy and gx + gw <= ox + ow and gy + gh <= oy + oh:
+                    children.append(other)
+        item["children"] = children
+
+    for item in result:
+        item.pop("top", None)
+    return result
+
+
+def node_group(node: dict[str, Any], groups_list: list[dict[str, Any]]) -> tuple[int, str, float]:
+    """返回节点所在分区的下标、标题，以及该分区的排序坐标（取包含它的最小分区）。"""
+    pos = node.get("pos") or [0, 0]
+    try:
+        px, py = float(pos[0]), float(pos[1])
+    except (TypeError, IndexError, ValueError):
+        return -1, "", 0.0
+    best: tuple[float, float, int, str] | None = None
+    for index, group in enumerate(groups_list):
+        bounding = group.get("bounding") or [0, 0, 0, 0]
+        if len(bounding) < 4:
+            continue
+        gx, gy, gw, gh = (float(v) for v in bounding[:4])
+        if gx <= px <= gx + gw and gy <= py <= gy + gh:
+            area = gw * gh
+            if best is None or area < best[0]:
+                best = (area, gy, index, group.get("title") or "")
+    if best is None:
+        return -1, "", py
+    return best[2], best[3], best[1]
+
+
+def apply_mode_overrides(workflow: dict[str, Any], group_modes: dict[str, bool],
+                         node_modes: dict[str, bool]) -> dict[str, Any]:
+    """按手机端的开关设置节点的 mode（0=执行，4=旁路），返回一份副本。"""
+    if not group_modes and not node_modes:
+        return workflow
+    groups_list = workflow.get("groups") or []
+    for node in workflow.get("nodes", []):
+        if group_modes:
+            index, _, _ = node_group(node, groups_list)
+            key = str(index)
+            if key in group_modes:
+                node["mode"] = 0 if group_modes[key] else 4
+        node_id = str(node.get("id"))
+        if node_id in node_modes:
+            node["mode"] = 0 if node_modes[node_id] else 4
+    return workflow
+
+
+def workflow_schema(workflow: dict[str, Any], object_info: dict[str, Any]) -> list[dict[str, Any]]:
+    groups_list = workflow.get("groups") or []
+    ordered: list[tuple[int, int, str, float, dict[str, Any]]] = []
+    for index, node in enumerate(workflow.get("nodes", [])):
+        group_index, title, top = node_group(node, groups_list)
+        ordered.append((index, group_index, title, top, node))
+    # 按画布分区从上到下、再按节点原始顺序排列，让手机上的顺序与 ComfyUI 里一致
+    ordered.sort(key=lambda item: (item[3], item[0]))
+
+    result: list[dict[str, Any]] = []
+    for _, group_index, group_title, _, node in ordered:
         info = object_info.get(node.get("type"))
         if not info:
             continue
+        enabled = node.get("mode", 0) == 0
         sockets = workflow_input_map(node)
         values = node_widget_values(node, info)
         for name, spec in node_definitions(info):
@@ -315,6 +478,9 @@ def workflow_schema(workflow: dict[str, Any], object_info: dict[str, Any]) -> li
                 continue
             description = describe_input(node, name, spec, values.get(name))
             if description:
+                description["group"] = group_title
+                description["groupId"] = group_index
+                description["enabled"] = enabled
                 result.append(description)
     return result
 
@@ -454,12 +620,23 @@ async def health() -> dict[str, Any]:
 
 
 @app.post("/api/login")
-async def login(request: LoginRequest) -> dict[str, Any]:
-    if request.username != CONFIG["username"] or not password_valid(request.password):
-        raise HTTPException(status_code=401, detail="账号或密码错误")
+async def login(payload: LoginRequest, request: Request) -> dict[str, Any]:
+    ip = client_ip(request)
+    attempts = recent_failures(ip)
+    if len(attempts) >= LOGIN_MAX_FAILURES:
+        wait = int(LOGIN_WINDOW_SECONDS - (time.time() - attempts[0])) + 1
+        raise HTTPException(status_code=429, detail=f"尝试次数过多，请 {max(wait, 1)} 秒后再试")
+
+    if payload.username != CONFIG["username"] or not password_valid(payload.password):
+        record_failure(ip)
+        left = LOGIN_MAX_FAILURES - len(recent_failures(ip))
+        detail = "账号或密码错误" if left > 0 else "账号或密码错误，已暂时锁定"
+        raise HTTPException(status_code=401, detail=detail)
+
+    LOGIN_FAILURES.pop(ip, None)
     return {
-        "token": issue_token(request.username),
-        "username": request.username,
+        "token": issue_token(payload.username),
+        "username": payload.username,
         "comfyInstances": await discover_comfy(),
     }
 
@@ -496,6 +673,7 @@ async def workflow_detail(
         "workflow": workflow_summary(workflow_id, path, root, workflow),
         "comfyUrl": url,
         "inputs": workflow_schema(workflow, info),
+        "groups": workflow_groups(workflow),
     }
 
 
@@ -523,6 +701,7 @@ async def run_workflow(workflow_id: str, request: RunRequest, _: str = Depends(r
     url = await active_comfy(request.comfyUrl)
     try:
         info = await get_object_info(url)
+        apply_mode_overrides(workflow, request.groupModes, request.nodeModes)
         prompt = compile_prompt(workflow, info, request.overrides)
         async with httpx.AsyncClient(timeout=30.0, trust_env=False) as client:
             response = await client.post(f"{url}/prompt", json={"prompt": prompt, "client_id": f"comfy-mobile-{uuid.uuid4().hex}"})
@@ -541,6 +720,72 @@ async def run_workflow(workflow_id: str, request: RunRequest, _: str = Depends(r
         row = db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
     asyncio.create_task(track_job(job_id))
     return {"job": job_json(row)}
+
+
+def safe_output_path(relative: str) -> Path:
+    """把相对路径解析到 OUTPUT_DIR 之下，越界直接拒绝。"""
+    base = OUTPUT_DIR.resolve()
+    target = (base / (relative or "")).resolve()
+    if target != base and base not in target.parents:
+        raise HTTPException(status_code=400, detail="非法路径")
+    return target
+
+
+@app.get("/api/outputs")
+async def list_outputs(path: str = Query(default=""), _: str = Depends(require_auth)) -> dict[str, Any]:
+    """浏览 ComfyUI 的 output 目录（含子文件夹），只列出当前这一层。"""
+    if not OUTPUT_DIR.is_dir():
+        raise HTTPException(status_code=404, detail="未找到 ComfyUI 的 output 目录")
+    base = OUTPUT_DIR.resolve()
+    target = safe_output_path(path)
+    if not target.is_dir():
+        raise HTTPException(status_code=404, detail="目录不存在")
+
+    entries: list[dict[str, Any]] = []
+    try:
+        children = list(target.iterdir())
+    except OSError as error:
+        raise HTTPException(status_code=503, detail=f"无法读取目录：{error}") from error
+
+    for child in children:
+        if child.name.startswith("."):
+            continue
+        try:
+            stat = child.stat()
+        except OSError:
+            continue
+        is_dir = child.is_dir()
+        entries.append({
+            "name": child.name,
+            "path": child.relative_to(base).as_posix(),
+            "dir": is_dir,
+            "size": 0 if is_dir else stat.st_size,
+            "mtime": int(stat.st_mtime),
+            "mime": "" if is_dir else (mimetypes.guess_type(child.name)[0] or "application/octet-stream"),
+        })
+    entries.sort(key=lambda item: (not item["dir"], item["name"].lower()))
+
+    parent = ""
+    if str(target) != str(base):
+        parent = target.parent.relative_to(base).as_posix()
+        if parent == ".":
+            parent = ""
+
+    return {
+        "root": str(base),
+        "path": target.relative_to(base).as_posix() if str(target) != str(base) else "",
+        "parent": parent,
+        "entries": entries,
+    }
+
+
+@app.get("/api/outputs/file")
+async def output_file(path: str = Query(...), _: str = Depends(require_auth)) -> FileResponse:
+    target = safe_output_path(path)
+    if not target.is_file():
+        raise HTTPException(status_code=404, detail="文件不存在")
+    media_type = mimetypes.guess_type(target.name)[0] or "application/octet-stream"
+    return FileResponse(target, media_type=media_type, filename=target.name)
 
 
 @app.get("/api/jobs")

@@ -35,10 +35,12 @@ public final class WorkflowDetailController {
         });
     }
 
-    public void run(Map<String, Object> values, Map<String, Uri> media) {
+    public void run(Map<String, Object> values, Map<String, Uri> media,
+                    Map<String, Boolean> nodeModes, Map<String, Boolean> groupModes) {
         if (workflow == null) { view.showError("工作流尚未加载"); return; }
         view.setLoading(true);
-        repository.runWorkflow(workflowId, workflow.comfyUrl, values, media, new AppRepository.Callback<JobInfo>() {
+        repository.runWorkflow(workflowId, workflow.comfyUrl, values, media, nodeModes, groupModes,
+                new AppRepository.Callback<JobInfo>() {
             @Override public void onSuccess(JobInfo value) { view.setLoading(false); view.showQueued(value); }
             @Override public void onError(String message) { view.setLoading(false); view.showError(message); }
         });

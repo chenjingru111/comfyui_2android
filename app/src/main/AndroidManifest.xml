@@ -10,6 +10,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity android:name=".view.ArtifactActivity" />
+        <activity android:name=".view.OutputFilesActivity" />
         <activity android:name=".view.JobsActivity" />
         <activity android:name=".view.WorkflowDetailActivity" />
         <activity android:name=".view.WorkflowListActivity" />

@@ -19,6 +19,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public final class ApiClient {
+    /** 登录态失效（网关返回 401）：调用方可以据此把用户送回登录页。 */
+    public static final class Unauthorized extends IOException {
+        public Unauthorized(String message) { super(message); }
+    }
+
     private String baseUrl;
     private String token;
 
@@ -85,6 +90,7 @@ public final class ApiClient {
         HttpURLConnection connection = open(path);
         connection.setRequestMethod("GET");
         int status = connection.getResponseCode();
+        if (status == 401) throw new Unauthorized(errorMessage(connection));
         if (status < 200 || status >= 300) throw new IOException(errorMessage(connection));
         try (InputStream input = connection.getInputStream(); FileOutputStream output = new FileOutputStream(destination)) {
             byte[] buffer = new byte[1024 * 1024];
@@ -106,6 +112,7 @@ public final class ApiClient {
 
     private static JSONObject parseJsonResponse(HttpURLConnection connection) throws Exception {
         int status = connection.getResponseCode();
+        if (status == 401) throw new Unauthorized(errorMessage(connection));
         if (status < 200 || status >= 300) throw new IOException(errorMessage(connection));
         try (InputStream input = connection.getInputStream()) {
             return new JSONObject(new String(readAll(input), StandardCharsets.UTF_8));

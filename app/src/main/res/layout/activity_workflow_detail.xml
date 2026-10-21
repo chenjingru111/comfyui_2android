@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/app_background"
+    android:fitsSystemWindows="true"
     android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
@@ -29,6 +30,73 @@
         android:layout_height="wrap_content"
         android:indeterminate="true"
         android:visibility="gone" />
+    <EditText
+        android:id="@+id/inputFilter"
+        style="@style/TextInput"
+        android:layout_marginStart="@dimen/screen_padding"
+        android:layout_marginTop="@dimen/space_sm"
+        android:layout_marginEnd="@dimen/screen_padding"
+        android:hint="筛选参数（节点名 / 参数名）"
+        android:imeOptions="actionSearch"
+        android:inputType="text"
+        android:singleLine="true" />
+    <Switch
+        android:id="@+id/showBypassedSwitch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/screen_padding"
+        android:layout_marginTop="@dimen/space_xs"
+        android:layout_marginEnd="@dimen/screen_padding"
+        android:text="显示已旁路的节点（不执行，仅供查看）"
+        android:textColor="@color/text_secondary"
+        android:textSize="13sp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/screen_padding"
+        android:layout_marginTop="@dimen/space_sm"
+        android:layout_marginEnd="@dimen/screen_padding"
+        android:background="@drawable/bg_card"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/space_md"
+        android:paddingTop="@dimen/space_sm"
+        android:paddingEnd="@dimen/space_md"
+        android:paddingBottom="@dimen/space_sm">
+
+        <LinearLayout
+            android:id="@+id/flowHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingTop="@dimen/space_xs"
+            android:paddingBottom="@dimen/space_xs">
+
+            <TextView
+                android:id="@+id/flowSummary"
+                style="@style/FieldLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="流程" />
+
+            <TextView
+                android:id="@+id/flowHint"
+                style="@style/MutedText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="展开 ▾" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/flowGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_xs"
+            android:orientation="vertical"
+            android:visibility="gone" />
+    </LinearLayout>
     <ListView
         android:id="@+id/inputList"
         android:layout_width="match_parent"

@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/app_background"
+    android:fitsSystemWindows="true"
     android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,7 +18,7 @@
             android:layout_weight="1"
             android:orientation="vertical">
             <TextView
-                style="@style/AppTitle"
+                style="@style/SectionTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/workflows" />
@@ -25,20 +26,39 @@
                 style="@style/MutedText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/workflows_subtitle" />
+                android:text="选择流程并配置参数" />
         </LinearLayout>
+        <Button
+            android:id="@+id/accountButton"
+            style="@style/SecondaryButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:textSize="13sp"
+            android:text="账号" />
         <Button
             android:id="@+id/jobsButton"
             style="@style/SecondaryButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/space_xs"
+            android:minWidth="0dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:textSize="13sp"
             android:text="@string/jobs" />
         <Button
             android:id="@+id/refreshButton"
             style="@style/SecondaryButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/space_sm"
+            android:layout_marginStart="@dimen/space_xs"
+            android:minWidth="0dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:textSize="13sp"
             android:text="@string/refresh" />
     </LinearLayout>
     <TextView

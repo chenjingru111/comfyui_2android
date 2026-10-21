@@ -33,6 +33,8 @@ public final class JobsActivity extends Activity implements JobsController.View 
         list.setAdapter(adapter);
         controller = new JobsController(AppRepository.get(this), this);
         findViewById(R.id.jobsRefreshButton).setOnClickListener(view -> controller.refresh());
+        findViewById(R.id.outputsButton).setOnClickListener(view ->
+                startActivity(new Intent(this, OutputFilesActivity.class)));
         list.setOnItemClickListener((parent, view, position, id) -> chooseArtifact(adapter.getItem(position)));
         controller.refresh();
     }

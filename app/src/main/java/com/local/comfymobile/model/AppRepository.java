@@ -30,6 +30,7 @@ public final class AppRepository {
     private static AppRepository instance;
     private final ExecutorService executor = Executors.newFixedThreadPool(4);
     private final Handler main = new Handler(Looper.getMainLooper());
+    private volatile boolean unauthorized;
     private final SessionStore sessionStore;
     private final ContentResolver contentResolver;
     private final File cacheDir;
@@ -63,7 +64,7 @@ public final class AppRepository {
                 JSONObject request = new JSONObject().put("username", username).put("password", password);
                 Session session = new Session(api.post("/api/login", request));
                 String comfyUrl = session.instances.stream().filter(item -> item.online).map(item -> item.url).findFirst().orElse("");
-                sessionStore.save(normalize(baseUrl), session.token, comfyUrl);
+                sessionStore.save(normalize(baseUrl), session.token, comfyUrl, username);
                 api.configure(normalize(baseUrl), session.token);
                 success(callback, session);
             } catch (Exception error) { failure(callback, error); }
@@ -78,7 +79,9 @@ public final class AppRepository {
         run(callback, () -> new WorkflowDetail(api.get("/api/workflows/" + id + "?comfyUrl=" + encode(sessionStore.comfyUrl()))));
     }
 
-    public void runWorkflow(String id, String comfyUrl, Map<String, Object> values, Map<String, Uri> media, Callback<JobInfo> callback) {
+    public void runWorkflow(String id, String comfyUrl, Map<String, Object> values, Map<String, Uri> media,
+                            Map<String, Boolean> nodeModes, Map<String, Boolean> groupModes,
+                            Callback<JobInfo> callback) {
         executor.execute(() -> {
             try {
                 JSONObject overrides = new JSONObject();
@@ -87,7 +90,11 @@ public final class AppRepository {
                     JSONObject upload = api.upload(contentResolver, entry.getValue(), mediaKind(entry.getKey()));
                     overrides.put(entry.getKey(), upload.getString("storedName"));
                 }
-                JSONObject body = new JSONObject().put("comfyUrl", comfyUrl).put("overrides", overrides);
+                JSONObject body = new JSONObject()
+                        .put("comfyUrl", comfyUrl)
+                        .put("overrides", overrides)
+                        .put("nodeModes", new JSONObject(nodeModes == null ? java.util.Collections.emptyMap() : nodeModes))
+                        .put("groupModes", new JSONObject(groupModes == null ? java.util.Collections.emptyMap() : groupModes));
                 JobInfo job = new JobInfo(api.post("/api/workflows/" + id + "/run", body).getJSONObject("job"));
                 success(callback, job);
             } catch (Exception error) { failure(callback, error); }
@@ -96,6 +103,11 @@ public final class AppRepository {
 
     public void jobs(Callback<List<JobInfo>> callback) {
         run(callback, () -> JobInfo.list(api.get("/api/jobs").optJSONArray("jobs")));
+    }
+
+    /** 浏览本机 ComfyUI 的 output 目录；path 为空表示根目录。 */
+    public void outputs(String path, Callback<Entities.OutputListing> callback) {
+        run(callback, () -> new Entities.OutputListing(api.get("/api/outputs?path=" + encode(path))));
     }
 
     public void downloadArtifact(Artifact artifact, Callback<File> callback) {
@@ -112,8 +124,16 @@ public final class AppRepository {
 
     private <T> void success(Callback<T> callback, T value) { main.post(() -> callback.onSuccess(value)); }
     private void failure(Callback<?> callback, Exception error) {
+        unauthorized = error instanceof ApiClient.Unauthorized;
         String message = error.getMessage() == null ? error.getClass().getSimpleName() : error.getMessage();
         main.post(() -> callback.onError(message));
+    }
+
+    /** 上一次失败是不是“登录态失效”，读一次就清掉。 */
+    public boolean consumeUnauthorized() {
+        boolean value = unauthorized;
+        unauthorized = false;
+        return value;
     }
 
     private static String normalize(String url) {
