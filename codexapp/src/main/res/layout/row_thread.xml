@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:background="@color/surface" android:orientation="vertical" android:padding="16dp">
+    <TextView android:id="@+id/threadName" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:maxLines="1" android:ellipsize="end"
+        android:textColor="@color/primary" android:textSize="17sp" android:textStyle="bold" />
+    <TextView android:id="@+id/threadPreview" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:layout_marginTop="5dp" android:maxLines="2"
+        android:ellipsize="end" android:textColor="@color/muted" />
+    <TextView android:id="@+id/threadMeta" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:layout_marginTop="5dp"
+        android:maxLines="1" android:ellipsize="middle" android:textColor="@color/accent" android:textSize="12sp" />
+</LinearLayout>

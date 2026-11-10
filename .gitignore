@@ -9,8 +9,11 @@ local.properties
 server/__pycache__/
 server/data/
 server/config.json
+codex-server/config.json
+codex-server/__pycache__/
 *.log
 *.ps1.user
 
 # Contains the private WireGuard key used by the local device.
 app/src/main/res/raw/person_key.json
+codexapp/src/main/res/raw/person_key.json

@@ -1,0 +1,9 @@
+{
+  "bindHost": "192.168.5.160",
+  "port": 8770,
+  "username": "admin",
+  "passwordSalt": "REPLACE_WITH_GENERATED_SALT",
+  "passwordHash": "REPLACE_WITH_GENERATED_PASSWORD_HASH",
+  "tokenSecret": "REPLACE_WITH_GENERATED_TOKEN_SECRET",
+  "codexBinary": "/path/to/codex"
+}

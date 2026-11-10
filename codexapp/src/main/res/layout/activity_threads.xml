@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/background" android:orientation="vertical" android:fitsSystemWindows="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:background="@color/surface" android:gravity="center_vertical"
+        android:orientation="horizontal" android:padding="14dp">
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:text="@string/threads" android:textColor="@color/primary"
+            android:textSize="24sp" android:textStyle="bold" />
+        <Button android:id="@+id/newButton" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:text="@string/new_thread" />
+        <Button android:id="@+id/refreshButton" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:text="@string/refresh" />
+    </LinearLayout>
+    <ProgressBar android:id="@+id/threadProgress" style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:indeterminate="true" android:visibility="gone" />
+    <TextView android:id="@+id/threadError" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:padding="10dp" android:textColor="@color/error" />
+    <ListView android:id="@+id/threadList" android:layout_width="match_parent"
+        android:layout_height="0dp" android:layout_weight="1" android:divider="@color/divider"
+        android:dividerHeight="1dp" />
+</LinearLayout>

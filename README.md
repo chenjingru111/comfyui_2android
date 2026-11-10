@@ -2,6 +2,10 @@
 
 Native Android client and local authenticated gateway for ComfyUI.
 
+The repository also contains `codexapp`, an Android client for managing the
+server's VS Code/Codex conversations through a VPN-only authenticated gateway.
+See [docs/CODEX_MOBILE.md](docs/CODEX_MOBILE.md).
+
 ## Architecture
 
 - `app/.../model`: HTTP client, session state, DTOs and repository.

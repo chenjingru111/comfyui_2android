@@ -1,0 +1,11 @@
+<resources>
+    <color name="background">#F4F6FA</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="primary">#111827</color>
+    <color name="accent">#10A37F</color>
+    <color name="muted">#6B7280</color>
+    <color name="divider">#E5E7EB</color>
+    <color name="error">#B91C1C</color>
+    <color name="user_bubble">#DDF7EE</color>
+    <color name="agent_bubble">#FFFFFF</color>
+</resources>

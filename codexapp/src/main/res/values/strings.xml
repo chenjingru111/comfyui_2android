@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Codex Mobile</string>
+    <string name="login">连接 Codex</string>
+    <string name="server">服务器地址</string>
+    <string name="username">账号</string>
+    <string name="password">密码</string>
+    <string name="vpn">使用 person_key VPN</string>
+    <string name="threads">Codex 对话</string>
+    <string name="refresh">刷新</string>
+    <string name="new_thread">新建</string>
+    <string name="send">发送</string>
+    <string name="stop">停止</string>
+</resources>
